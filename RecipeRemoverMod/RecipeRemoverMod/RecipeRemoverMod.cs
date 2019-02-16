@@ -3,6 +3,7 @@ using Asphalt.Service;
 using Asphalt.Storeable;
 using Asphalt.Utils;
 using Eco.Core.Plugins.Interfaces;
+using Eco.Core.Utils;
 using Eco.Gameplay.Components;
 using Eco.Gameplay.Items;
 using System;
@@ -14,21 +15,22 @@ using System.Threading.Tasks;
 
 namespace RecipeRemoverMod
 {
-    [AsphaltPlugin("RecipeRemoverMods")]
+    [AsphaltPlugin("RecipeRemoverMod")]
     public class RecipeRemoverMod : IModKitPlugin
     {
         [Inject]
         [StorageLocation("Config")]
         public static IStorage ConfigStorage { get; set; }
 
-        public void OnPostEnable()
+        public static void OnRecipesInitialized()
         {
             try
             {
                 Dictionary<Type, Recipe[]> staticRecipes = (Dictionary<Type, Recipe[]>)typeof(CraftingComponent).GetFields(BindingFlags.Static | BindingFlags.NonPublic).First(x => x.Name.Contains("staticRecipes")).GetValue(null);
                 var keyTypes = staticRecipes.Values.SelectMany(r => r).Select(r => r.GetType());
 
-                foreach (var type in keyTypes.ToArray()) //copy list because it will be modified from RemoveRecipe
+                //       var allRecipes = typeof(Recipe).InstancesOfCreatableTypesParallel<Recipe>().Select(r => r.GetType()).ToArray();
+                foreach (var type in keyTypes.ToArray())  //copy list because it will be modified from RemoveRecipe
                 {
                     bool? config = ConfigStorage.Get<bool?>(type.FullName);
 
@@ -48,6 +50,7 @@ namespace RecipeRemoverMod
                 throw;
             }
         }
+
 
         public string GetStatus()
         {
